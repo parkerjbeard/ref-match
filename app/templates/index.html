@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RefMatch - Automated Referee Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            font-size: 2rem;
+        }
+        
+        nav {
+            background: #34495e;
+            padding: 0.5rem 0;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        nav a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        main {
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+        
+        .hero {
+            background: white;
+            padding: 3rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: #666;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            transition: background 0.3s, transform 0.1s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .feature {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .feature h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .auth-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+            display: none;
+        }
+        
+        .auth-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .dashboard {
+            display: none;
+        }
+        
+        .dashboard.active {
+            display: block;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h4 {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 3rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>RefMatch</h1>
+            <p>Automated Referee Management Platform</p>
+        </div>
+    </header>
+    
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#" onclick="event.preventDefault(); showSection('home')">Home</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showSection('login')">Login</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showSection('register')">Register</a></li>
+                <li><a href="#" onclick="event.preventDefault(); showSection('dashboard')" id="dashboardLink" class="hidden">Dashboard</a></li>
+                <li><a href="#" onclick="event.preventDefault(); logout()" id="logoutLink" class="hidden">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="container">
+        <!-- Home Section -->
+        <section id="home" class="hero">
+            <h2>Welcome to RefMatch</h2>
+            <p>Streamlining referee assignments for middle school sports in the Phoenix area</p>
+            
+            <div class="cta-buttons">
+                <a href="#" onclick="event.preventDefault(); showSection('register')" class="btn">Get Started as Referee</a>
+                <a href="#" onclick="event.preventDefault(); showSection('register')" class="btn btn-secondary">Register as Organizer</a>
+            </div>
+            
+            <div class="features">
+                <div class="feature">
+                    <h3>Automated Matching</h3>
+                    <p>Our algorithm finds the best referee for your game based on certifications, location, and reliability.</p>
+                </div>
+                <div class="feature">
+                    <h3>Instant Notifications</h3>
+                    <p>Referees receive SMS and email notifications for assignments with easy confirmation.</p>
+                </div>
+                <div class="feature">
+                    <h3>Reliable Service</h3>
+                    <p>Background-checked referees with ratings system and 24-hour confirmation requirements.</p>
+                </div>
+                <div class="feature">
+                    <h3>Simple Payments</h3>
+                    <p>Organizers pay upfront, referees get instant payouts after games.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Login Section -->
+        <section id="login" class="auth-section">
+            <h2>Login</h2>
+            
+            <!-- Quick Login Buttons -->
+            <div style="margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 6px;">
+                <h4 style="margin-bottom: 1rem;">Quick Login (Development)</h4>
+                <div style="display: grid; gap: 0.5rem;">
+                    <button onclick="quickLogin('referee1@email.com', 'Referee123!')" class="btn btn-secondary" style="font-size: 0.9rem;">
+                        Login as Referee
+                    </button>
+                    <button onclick="quickLogin('organizer1@school.edu', 'Organizer123!')" class="btn btn-secondary" style="font-size: 0.9rem;">
+                        Login as Organizer
+                    </button>
+                    <button onclick="quickLogin('admin@refmatch.com', 'Admin123!')" class="btn btn-secondary" style="font-size: 0.9rem;">
+                        Login as Admin
+                    </button>
+                </div>
+            </div>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <p style="margin-top: 1rem;">Don't have an account? <a href="#" onclick="showSection('register')">Register here</a></p>
+        </section>
+        
+        <!-- Register Section -->
+        <section id="register" class="auth-section">
+            <h2>Register</h2>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="role">I am a...</label>
+                    <select id="role" required onchange="toggleOrgFields()">
+                        <option value="">Select Role</option>
+                        <option value="referee">Referee</option>
+                        <option value="organizer">Game Organizer</option>
+                        <option value="coach">Coach</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" required placeholder="(555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required minlength="8">
+                </div>
+                <div class="form-group" id="orgNameGroup" style="display: none;">
+                    <label for="orgName">Organization Name</label>
+                    <input type="text" id="orgName">
+                </div>
+                <button type="submit" class="btn">Register</button>
+            </form>
+            <p style="margin-top: 1rem;">Already have an account? <a href="#" onclick="showSection('login')">Login here</a></p>
+        </section>
+        
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="dashboard">
+            <h2>Dashboard</h2>
+            <div id="dashboardContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 RefMatch. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Debug logging
+        console.log('RefMatch script starting...');
+        
+        // Add error handling
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            console.error('JavaScript Error:', msg, '\nURL:', url, '\nLine:', lineNo);
+            alert('JavaScript Error: ' + msg);
+            return false;
+        };
+        
+        const API_URL = '/api';
+        let authToken = localStorage.getItem('authToken');
+        let currentUser = null;
+        
+        console.log('Variables initialized. AuthToken:', authToken ? 'exists' : 'null');
+        
+        // Check if user is logged in
+        if (authToken) {
+            checkAuth();
+        }
+        
+        function showSection(section) {
+            console.log('showSection called with:', section);
+            
+            try {
+                // Hide all sections
+                document.querySelectorAll('.hero, .auth-section, .dashboard').forEach(el => {
+                    el.classList.remove('active');
+                    if (el.classList.contains('hero')) {
+                        el.style.display = 'none';
+                    }
+                });
+                
+                // Show requested section
+                if (section === 'home') {
+                    const hero = document.querySelector('.hero');
+                    if (hero) {
+                        hero.style.display = 'block';
+                        console.log('Showing hero section');
+                    }
+                } else {
+                    const element = document.getElementById(section);
+                    if (element) {
+                        element.classList.add('active');
+                        console.log('Added active class to:', section);
+                    } else {
+                        console.error('Section not found:', section);
+                    }
+                }
+                
+                // Load dashboard content if showing dashboard
+                if (section === 'dashboard' && currentUser) {
+                    loadDashboard();
+                }
+            } catch (error) {
+                console.error('Error in showSection:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        function toggleOrgFields() {
+            const role = document.getElementById('role').value;
+            const orgGroup = document.getElementById('orgNameGroup');
+            orgGroup.style.display = role === 'organizer' ? 'block' : 'none';
+        }
+        
+        async function quickLogin(email, password) {
+            // Fill in the form fields
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = password;
+            
+            // Submit the form
+            const form = document.querySelector('#login form');
+            form.dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.access_token;
+                    currentUser = data.user;
+                    localStorage.setItem('authToken', authToken);
+                    
+                    showAlert('Login successful!', 'success');
+                    updateNavigation();
+                    showSection('dashboard');
+                } else {
+                    showAlert(data.error || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            const formData = {
+                role: document.getElementById('role').value,
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value
+            };
+            
+            if (formData.role === 'organizer') {
+                formData.organization_name = document.getElementById('orgName').value;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Registration successful! Please check your email to verify your account.', 'success');
+                    showSection('login');
+                } else {
+                    showAlert(data.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/users/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentUser = await response.json();
+                    updateNavigation();
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                logout();
+            }
+        }
+        
+        function updateNavigation() {
+            if (currentUser) {
+                document.getElementById('dashboardLink').classList.remove('hidden');
+                document.getElementById('logoutLink').classList.remove('hidden');
+                document.querySelector('nav a[onclick*="login"]').parentElement.style.display = 'none';
+                document.querySelector('nav a[onclick*="register"]').parentElement.style.display = 'none';
+            }
+        }
+        
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('authToken');
+            location.reload();
+        }
+        
+        async function loadDashboard() {
+            const content = document.getElementById('dashboardContent');
+            
+            if (currentUser.role === 'referee') {
+                content.innerHTML = await loadRefereeDashboard();
+            } else if (currentUser.role === 'organizer') {
+                content.innerHTML = await loadOrganizerDashboard();
+            } else if (currentUser.role === 'admin') {
+                content.innerHTML = await loadAdminDashboard();
+            }
+        }
+        
+        async function loadRefereeDashboard() {
+            // Load referee-specific data
+            const assignments = await fetchAPI('/assignments/my-assignments');
+            
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Reliability Score</h4>
+                        <div class="value">${(currentUser.reliability_score * 100).toFixed(0)}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Games Completed</h4>
+                        <div class="value">${currentUser.total_games_completed || 0}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Upcoming Games</h4>
+                        <div class="value">${assignments.filter(a => a.status === 'confirmed').length}</div>
+                    </div>
+                </div>
+                
+                <h3>My Assignments</h3>
+                <div style="background: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    ${assignments.length > 0 ? assignments.map(a => `
+                        <div style="padding: 1rem; border-bottom: 1px solid #eee;">
+                            <strong>${a.game.sport}</strong> - ${new Date(a.game.scheduled_date).toLocaleDateString()}
+                            <br>
+                            ${a.game.teams} at ${a.game.location}
+                            <br>
+                            Status: <span style="color: ${a.status === 'confirmed' ? 'green' : 'orange'}">${a.status}</span>
+                            - Payment: $${a.payment_amount}
+                        </div>
+                    `).join('') : '<p>No assignments yet.</p>'}
+                </div>
+            `;
+        }
+        
+        async function loadOrganizerDashboard() {
+            // Load organizer-specific data
+            const games = await fetchAPI('/games');
+            
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Games</h4>
+                        <div class="value">${games.length}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Pending Assignment</h4>
+                        <div class="value">${games.filter(g => g.status === 'pending').length}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Completed</h4>
+                        <div class="value">${games.filter(g => g.status === 'completed').length}</div>
+                    </div>
+                </div>
+                
+                <h3>Submit New Game</h3>
+                <form onsubmit="handleGameSubmit(event)" style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                    <div class="form-group">
+                        <label>Sport</label>
+                        <select id="gameSport" required>
+                            <option value="basketball">Basketball</option>
+                            <option value="football">Football</option>
+                            <option value="soccer">Soccer</option>
+                            <option value="softball">Softball</option>
+                            <option value="volleyball">Volleyball</option>
+                            <option value="baseball">Baseball</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date & Time</label>
+                        <input type="datetime-local" id="gameDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="gameAddress" placeholder="Street Address" required>
+                    </div>
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" id="gameCity" value="Phoenix" required>
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" id="gameState" value="AZ" maxlength="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Zip Code</label>
+                        <input type="text" id="gameZip" required>
+                    </div>
+                    <button type="submit" class="btn">Submit Game</button>
+                </form>
+                
+                <h3>My Games</h3>
+                <div style="background: white; padding: 1rem; border-radius: 8px;">
+                    ${games.length > 0 ? games.map(g => `
+                        <div style="padding: 1rem; border-bottom: 1px solid #eee;">
+                            <strong>${g.sport}</strong> - ${new Date(g.scheduled_date).toLocaleDateString()}
+                            <br>
+                            Location: ${g.city}, ${g.state}
+                            <br>
+                            Status: <span style="color: ${g.status === 'assigned' ? 'green' : 'orange'}">${g.status}</span>
+                            - Rate: $${g.final_rate}
+                        </div>
+                    `).join('') : '<p>No games submitted yet.</p>'}
+                </div>
+            `;
+        }
+        
+        async function loadAdminDashboard() {
+            const stats = await fetchAPI('/admin/dashboard');
+            
+            return `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Active Referees</h4>
+                        <div class="value">${stats.statistics.users.active_referees}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Success Rate</h4>
+                        <div class="value">${stats.statistics.assignments.success_rate}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Total Revenue</h4>
+                        <div class="value">$${stats.statistics.financials.total_revenue.toFixed(2)}</div>
+                    </div>
+                </div>
+                
+                <div style="margin: 2rem 0;">
+                    <button onclick="openAdminDashboard()" class="btn" style="margin-right: 1rem;">
+                        Open Full Admin Dashboard
+                    </button>
+                    <button onclick="triggerAssignments()" class="btn btn-secondary">Run Assignment Process</button>
+                </div>
+                
+                <h3>Recent Activity</h3>
+                <div style="background: white; padding: 1rem; border-radius: 8px;">
+                    ${stats.recent_activity.assignments.map(a => `
+                        <div style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                            ${a.game_sport} on ${new Date(a.game_date).toLocaleDateString()} - 
+                            ${a.referee} - 
+                            <span style="color: ${a.status === 'completed' ? 'green' : 'orange'}">${a.status}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        async function fetchAPI(endpoint) {
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    return await response.json();
+                }
+                return [];
+            } catch (error) {
+                console.error('API fetch error:', error);
+                return [];
+            }
+        }
+        
+        async function handleGameSubmit(event) {
+            event.preventDefault();
+            
+            const gameData = {
+                sport: document.getElementById('gameSport').value,
+                scheduled_date: document.getElementById('gameDate').value,
+                address: document.getElementById('gameAddress').value,
+                city: document.getElementById('gameCity').value,
+                state: document.getElementById('gameState').value,
+                zip_code: document.getElementById('gameZip').value,
+                certification_level_required: 'entry',
+                home_team: 'Home Team',
+                away_team: 'Away Team'
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/games`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(gameData)
+                });
+                
+                if (response.ok) {
+                    showAlert('Game submitted successfully!', 'success');
+                    loadDashboard();
+                } else {
+                    const data = await response.json();
+                    showAlert(data.error || 'Failed to submit game', 'error');
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+            }
+        }
+        
+        async function triggerAssignments() {
+            try {
+                const response = await fetch(`${API_URL}/assignments/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    showAlert('Assignment process triggered!', 'success');
+                }
+            } catch (error) {
+                showAlert('Failed to trigger assignments', 'error');
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            const container = document.querySelector('main');
+            container.insertBefore(alert, container.firstChild);
+            
+            setTimeout(() => alert.remove(), 5000);
+        }
+        
+        function openAdminDashboard() {
+            // Store the auth token so the admin page can use it
+            if (authToken) {
+                localStorage.setItem('authToken', authToken);
+                window.location.href = '/admin';
+            } else {
+                showAlert('Please login first', 'error');
+            }
+        }
+        
+        // Final debug log
+        console.log('RefMatch script loaded successfully. All functions defined.');
+        console.log('showSection function available:', typeof showSection === 'function');
+    </script>
+</body>
+</html>

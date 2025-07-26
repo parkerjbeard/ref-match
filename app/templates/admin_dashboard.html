@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RefMatch Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: #1a1a2e;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .nav {
+            background: #16213e;
+            padding: 0;
+        }
+        
+        .nav ul {
+            list-style: none;
+            display: flex;
+            padding: 0 2rem;
+        }
+        
+        .nav li {
+            margin-right: 2rem;
+        }
+        
+        .nav a {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 1rem 0;
+            display: block;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .nav a:hover, .nav a.active {
+            color: white;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1a1a2e;
+        }
+        
+        .stat-change {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .section h2 {
+            margin-bottom: 1.5rem;
+            color: #1a1a2e;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: #f8fafc;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status.confirmed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status.cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        
+        .filters select, .filters input {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>RefMatch Admin Dashboard</h1>
+    </div>
+    
+    <nav class="nav">
+        <ul>
+            <li><a href="#" class="active" onclick="showTab('overview')">Overview</a></li>
+            <li><a href="#" onclick="showTab('games')">Games</a></li>
+            <li><a href="#" onclick="showTab('assignments')">Assignments</a></li>
+            <li><a href="#" onclick="showTab('users')">Users</a></li>
+            <li><a href="#" onclick="showTab('payments')">Payments</a></li>
+            <li><a href="#" onclick="showTab('reports')">Reports</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Games</h3>
+                    <div class="stat-value" id="stat-total-games">0</div>
+                    <div class="stat-change positive">+12% from last month</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Referees</h3>
+                    <div class="stat-value" id="stat-active-refs">0</div>
+                    <div class="stat-change positive">+5% from last month</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Assignment Success</h3>
+                    <div class="stat-value" id="stat-success-rate">0%</div>
+                    <div class="stat-change positive">+2% from last month</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Revenue This Month</h3>
+                    <div class="stat-value" id="stat-revenue">$0</div>
+                    <div class="stat-change positive">+18% from last month</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Recent Activity</h2>
+                <table class="table" id="recent-activity">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Event</th>
+                            <th>Details</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Activity rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>Quick Actions</h2>
+                <div class="actions">
+                    <button class="btn" onclick="runAssignmentProcess()">Run Assignment Process</button>
+                    <button class="btn btn-secondary" onclick="exportData()">Export Reports</button>
+                    <button class="btn btn-secondary" onclick="sendNotifications()">Send Reminders</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Games Tab -->
+        <div id="games-tab" class="tab-content">
+            <div class="section">
+                <h2>Game Management</h2>
+                <div class="filters">
+                    <select id="game-status-filter" onchange="filterGames()">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="assigned">Assigned</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <select id="game-sport-filter" onchange="filterGames()">
+                        <option value="">All Sports</option>
+                        <option value="basketball">Basketball</option>
+                        <option value="football">Football</option>
+                        <option value="soccer">Soccer</option>
+                        <option value="softball">Softball</option>
+                        <option value="volleyball">Volleyball</option>
+                        <option value="baseball">Baseball</option>
+                    </select>
+                    <input type="date" id="game-date-filter" onchange="filterGames()">
+                    <button class="btn" onclick="showCreateGameModal()">Create Game</button>
+                </div>
+                
+                <table class="table" id="games-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date/Time</th>
+                            <th>Sport</th>
+                            <th>Location</th>
+                            <th>Referee</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Game rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Assignments Tab -->
+        <div id="assignments-tab" class="tab-content">
+            <div class="section">
+                <h2>Assignment Management</h2>
+                <div class="filters">
+                    <button class="btn" onclick="runManualAssignment()">Manual Assignment</button>
+                    <button class="btn btn-secondary" onclick="reassignUnconfirmed()">Reassign Unconfirmed</button>
+                </div>
+                
+                <table class="table" id="assignments-table">
+                    <thead>
+                        <tr>
+                            <th>Game</th>
+                            <th>Referee</th>
+                            <th>Assigned At</th>
+                            <th>Status</th>
+                            <th>Confirmation Deadline</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Assignment rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content">
+            <div class="section">
+                <h2>User Management</h2>
+                <div class="filters">
+                    <select id="user-role-filter" onchange="filterUsers()">
+                        <option value="">All Roles</option>
+                        <option value="referee">Referees</option>
+                        <option value="organizer">Organizers</option>
+                        <option value="admin">Admins</option>
+                    </select>
+                    <input type="text" placeholder="Search users..." id="user-search" onkeyup="filterUsers()">
+                    <button class="btn" onclick="showCreateUserModal()">Add User</button>
+                </div>
+                
+                <table class="table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Reliability</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- User rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Payments Tab -->
+        <div id="payments-tab" class="tab-content">
+            <div class="section">
+                <h2>Payment Management</h2>
+                <div class="filters">
+                    <select id="payment-status-filter" onchange="filterPayments()">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                    <button class="btn" onclick="processPayouts()">Process Payouts</button>
+                </div>
+                
+                <table class="table" id="payments-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>From/To</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Payment rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="tab-content">
+            <div class="section">
+                <h2>Reports & Analytics</h2>
+                <div class="filters">
+                    <input type="date" id="report-start-date">
+                    <input type="date" id="report-end-date">
+                    <select id="report-type">
+                        <option value="summary">Summary Report</option>
+                        <option value="referee-performance">Referee Performance</option>
+                        <option value="revenue">Revenue Report</option>
+                        <option value="assignment-success">Assignment Success</option>
+                    </select>
+                    <button class="btn" onclick="generateReport()">Generate Report</button>
+                </div>
+                
+                <div id="report-content">
+                    <!-- Report content will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Game Modal -->
+    <div id="game-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Game</h2>
+                <span class="close" onclick="closeModal('game-modal')">&times;</span>
+            </div>
+            <form id="game-form" onsubmit="handleGameSubmit(event)">
+                <div class="form-group">
+                    <label>Sport</label>
+                    <select name="sport" required>
+                        <option value="">Select Sport</option>
+                        <option value="basketball">Basketball</option>
+                        <option value="football">Football</option>
+                        <option value="soccer">Soccer</option>
+                        <option value="softball">Softball</option>
+                        <option value="volleyball">Volleyball</option>
+                        <option value="baseball">Baseball</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Game Level</label>
+                    <select name="game_level" required>
+                        <option value="6th_grade">6th Grade</option>
+                        <option value="7th_grade">7th Grade</option>
+                        <option value="8th_grade">8th Grade</option>
+                        <option value="jv">JV</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date & Time</label>
+                    <input type="datetime-local" name="game_time" required>
+                </div>
+                <div class="form-group">
+                    <label>Location Name</label>
+                    <input type="text" name="location_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" name="address" required>
+                </div>
+                <div class="form-group">
+                    <label>Home Team</label>
+                    <input type="text" name="home_team" required>
+                </div>
+                <div class="form-group">
+                    <label>Away Team</label>
+                    <input type="text" name="away_team" required>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes"></textarea>
+                </div>
+                <button type="submit" class="btn">Create Game</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = '/api';
+        let authToken = localStorage.getItem('authToken');
+        let currentTab = 'overview';
+        
+        // Tab switching
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.nav a').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            event.target.classList.add('active');
+            currentTab = tab;
+            
+            // Load data for the tab
+            switch(tab) {
+                case 'overview':
+                    loadDashboard();
+                    break;
+                case 'games':
+                    loadGames();
+                    break;
+                case 'assignments':
+                    loadAssignments();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'payments':
+                    loadPayments();
+                    break;
+                case 'reports':
+                    // Reports are loaded on demand
+                    break;
+            }
+        }
+        
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/admin/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update stats
+                    document.getElementById('stat-total-games').textContent = data.game_stats.total;
+                    document.getElementById('stat-active-refs').textContent = data.user_stats.active_referees;
+                    document.getElementById('stat-success-rate').textContent = `${data.assignment_stats.success_rate.toFixed(1)}%`;
+                    document.getElementById('stat-revenue').textContent = `$${data.revenue_stats.total_revenue.toFixed(2)}`;
+                    
+                    // Load recent activity
+                    loadRecentActivity();
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        // Load games
+        async function loadGames() {
+            try {
+                const response = await fetch(`${API_URL}/games/`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const games = await response.json();
+                    displayGames(games);
+                }
+            } catch (error) {
+                console.error('Error loading games:', error);
+            }
+        }
+        
+        function displayGames(games) {
+            const tbody = document.querySelector('#games-table tbody');
+            tbody.innerHTML = '';
+            
+            games.forEach(game => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>#${game.id}</td>
+                    <td>${new Date(game.game_time).toLocaleString()}</td>
+                    <td>${game.sport}</td>
+                    <td>${game.location_name}</td>
+                    <td>${game.referee ? game.referee.name : 'Unassigned'}</td>
+                    <td><span class="status ${game.status}">${game.status}</span></td>
+                    <td class="actions">
+                        <button class="btn btn-sm" onclick="editGame(${game.id})">Edit</button>
+                        <button class="btn btn-sm btn-secondary" onclick="assignReferee(${game.id})">Assign</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Create game
+        async function handleGameSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch(`${API_URL}/games/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    closeModal('game-modal');
+                    loadGames();
+                    showAlert('Game created successfully', 'success');
+                }
+            } catch (error) {
+                console.error('Error creating game:', error);
+                showAlert('Error creating game', 'error');
+            }
+        }
+        
+        // Run assignment process
+        async function runAssignmentProcess() {
+            if (!confirm('Run the assignment process now?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/assignments/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showAlert(`Assignment process completed. ${result.assigned} games assigned.`, 'success');
+                    loadDashboard();
+                }
+            } catch (error) {
+                console.error('Error running assignment process:', error);
+                showAlert('Error running assignment process', 'error');
+            }
+        }
+        
+        // Modal functions
+        function showCreateGameModal() {
+            document.getElementById('game-modal').classList.add('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Alert function
+        function showAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 2rem;
+                background: ${type === 'success' ? '#10b981' : '#ef4444'};
+                color: white;
+                border-radius: 8px;
+                z-index: 9999;
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 3000);
+        }
+        
+        // Logout
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/';
+        }
+        
+        // Initialize
+        loadDashboard();
+    </script>
+</body>
+</html>
