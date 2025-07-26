@@ -1,0 +1,44 @@
+# Core Framework
+flask==3.1.0
+flask-cors==5.0.0
+flask-limiter==3.8.0
+
+# Database
+sqlalchemy==2.0.36
+alembic==1.14.0
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib==1.7.4
+bcrypt==4.2.1
+python-dotenv==1.0.1
+cryptography==43.0.3
+
+# API Integrations
+stripe==11.3.0
+twilio==9.5.1
+sendgrid==6.11.0
+requests==2.32.3
+
+# Utilities
+python-dateutil==2.9.0.post0
+pytz==2024.2
+geopy==2.4.1
+apscheduler==3.10.4
+
+# Testing
+pytest==8.3.4
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+pytest-asyncio==0.25.0
+faker==33.1.0
+
+# Linting & Type Checking
+black==24.10.0
+flake8==7.1.1
+mypy==1.13.0
+isort==5.13.2
+
+# Development
+ipython==8.31.0
+watchdog==6.0.0
